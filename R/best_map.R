@@ -1,12 +1,3 @@
-`%>%` <- magrittr::`%>%`
-
-progressr::handlers(progressr::handler_progress(
-  format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
-  width=60,
-  complete="="
-))
-
-################################################################################
 
 best_map <- function(
   .x, .f, ..., .workers=1, .scheduling=1, .silent=FALSE
