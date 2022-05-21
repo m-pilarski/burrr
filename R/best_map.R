@@ -91,12 +91,9 @@ best_map2 <- function(
 
   .furrr_opts <- rlang::exec(furrr::furrr_options, !!!.furrr_opts_pars)
 
-  if(length(.x)==1){.x <- rep(.x, length(.y))}
-  if(length(.y)==1){.y <- rep(.y, length(.x))}
-
   tryCatch({
     progressr::with_progress({
-      .p <- progressr::progressor(steps=length(.x))
+      .p <- progressr::progressor(steps=max(length(.x), length(.y)))
       .r <- furrr::future_map2(.x, .y, function(..x_i, ..y_i){
         ..r_i <- rlang::exec(.f, ..x_i, ..y_i, !!!.dots); .p(); return(..r_i)
       }, .options=.furrr_opts); .p(amount=Inf)
