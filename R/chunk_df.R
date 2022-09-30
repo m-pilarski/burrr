@@ -1,5 +1,6 @@
 chunk_df <- function(.df, .n_rows=NULL, .n_chunks=NULL){
 
+  stopifnot(is.data.frame(.df))
   stopifnot(nrow(.df) > 0)
   stopifnot(sum(sapply(list(.n_rows, .n_chunks), is.null)) == 1)
   stopifnot(sum(sapply(list(.n_rows, .n_chunks), is.numeric)) == 1)

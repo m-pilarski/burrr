@@ -1,6 +1,5 @@
-
 best_map <- function(
-  .x, .f, ..., .workers=1, .scheduling=1, .silent=FALSE
+  .x, .f, ..., .workers=1, .scheduling=1, .silent=FALSE, .show_progress=TRUE
 ){
 
   .f <- purrr::as_mapper(.f)
@@ -36,12 +35,20 @@ best_map <- function(
   .furrr_opts <- rlang::exec(furrr::furrr_options, !!!.furrr_opts_pars)
 
   tryCatch({
-    progressr::with_progress({
-      .p <- progressr::progressor(steps=length(.x))
-      .r <- furrr::future_map(.x, function(..x_i){
-        ..r_i <- rlang::exec(.f, ..x_i, !!!.dots); .p(); return(..r_i)
-      }, .options=.furrr_opts); .p(amount=Inf)
-    })
+    progressr::with_progress(
+      expr={
+        .p <- progressr::progressor(steps=length(.x))
+        .r <- furrr::future_map(.x, function(..x_i){
+          ..r_i <- rlang::exec(.f, ..x_i, !!!.dots); .p(); return(..r_i)
+        }, .options=.furrr_opts); .p(amount=Inf)
+      },
+      handlers=progressr::handler_progress(
+        format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
+        width=60,
+        complete="="
+      ),
+      interval=1, enable=.show_progress
+    )
   }, finally={
     if(!is.null(.workers)){future::plan(.strategy_backup)}
   })
@@ -53,7 +60,8 @@ best_map <- function(
 ################################################################################
 
 best_map2 <- function(
-  .x, .y, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE
+  .x, .y, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE,
+  .show_progess=TRUE
 ){
 
   stopifnot((length(.x) == length(.y)) | any(c(length(.x), length(.y)) == 1))
@@ -92,12 +100,20 @@ best_map2 <- function(
   .furrr_opts <- rlang::exec(furrr::furrr_options, !!!.furrr_opts_pars)
 
   tryCatch({
-    progressr::with_progress({
-      .p <- progressr::progressor(steps=max(length(.x), length(.y)))
-      .r <- furrr::future_map2(.x, .y, function(..x_i, ..y_i){
-        ..r_i <- rlang::exec(.f, ..x_i, ..y_i, !!!.dots); .p(); return(..r_i)
-      }, .options=.furrr_opts); .p(amount=Inf)
-    })
+    progressr::with_progress(
+      expr={
+        .p <- progressr::progressor(steps=max(length(.x), length(.y)))
+        .r <- furrr::future_map2(.x, .y, function(..x_i, ..y_i){
+          ..r_i <- rlang::exec(.f, ..x_i, ..y_i, !!!.dots); .p(); return(..r_i)
+        }, .options=.furrr_opts); .p(amount=Inf)
+      },
+      handlers=progressr::handler_progress(
+        format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
+        width=60,
+        complete="="
+      ),
+      interval=1, enable=.show_progress
+    )
   }, finally={
     if(!is.null(.workers)){future::plan(.strategy_backup)}
   })
