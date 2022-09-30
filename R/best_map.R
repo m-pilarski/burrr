@@ -1,5 +1,5 @@
 best_map <- function(
-  .x, .f, ..., .workers=1, .scheduling=1, .silent=FALSE, .show_progress=TRUE
+  .x, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE, .show_progress=TRUE
 ){
 
   .f <- purrr::as_mapper(.f)
@@ -17,6 +17,8 @@ best_map <- function(
       }
     }else if(.workers >= 2){
       .workers <- min(.workers, future::availableCores())
+      future::plan(future::sequential, .skip=FALSE, .cleanup=TRUE)
+      gc()
       future::plan(future::multisession, workers=.workers, gc=TRUE)
     }else{
       stop("unable to set future strategy", call.=FALSE)
@@ -81,6 +83,8 @@ best_map2 <- function(
       }
     }else if(.workers >= 2){
       .workers <- min(.workers, future::availableCores())
+      future::plan(future::sequential, .skip=FALSE, .cleanup=TRUE)
+      gc()
       future::plan(future::multisession, workers=.workers, gc=TRUE)
     }else{
       stop("unable to set future strategy", call.=FALSE)
