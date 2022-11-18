@@ -37,6 +37,6 @@ chunk_vector <- function(.vec, .n_elems=NULL, .n_chunks=NULL){
     .vec_split_id <- ((.vec_elems_seq / length(.vec)) * .n_chunks) %/% 1 + 1
   }
 
-  unname(split.default(.vec, .df_split_id))
+  unname(split.default(.vec, .vec_split_id))
 
 }
