@@ -63,7 +63,7 @@ best_map <- function(
 
 best_map2 <- function(
   .x, .y, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE,
-  .show_progess=TRUE
+  .show_progress=TRUE
 ){
 
   stopifnot((length(.x) == length(.y)) | any(c(length(.x), length(.y)) == 1))
