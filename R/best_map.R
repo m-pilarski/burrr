@@ -51,6 +51,8 @@ best_map <- function(
       ),
       interval=1, enable=.show_progress
     )
+  }, interrupt=function(...){
+    stop("Interrupted by the user")
   }, finally={
     if(!is.null(.workers)){future::plan(.strategy_backup)}
   })
@@ -118,6 +120,8 @@ best_map2 <- function(
       ),
       interval=1, enable=.show_progress
     )
+  }, interrupt=function(...){
+    stop("Interrupted by the user")
   }, finally={
     if(!is.null(.workers)){future::plan(.strategy_backup)}
   })
