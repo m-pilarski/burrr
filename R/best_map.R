@@ -1,6 +1,6 @@
 best_map <- function(
   .x, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE, .show_progress=TRUE,
-  .globals=TRUE
+  .globals=TRUE, .pkg=NULL
 ){
 
   .f <- purrr::as_mapper(.f)
@@ -26,7 +26,7 @@ best_map <- function(
     }
   }
 
-  .furrr_opts_pars <- list()
+  .furrr_opts_pars <- list(packages=.pkg)
   if(future::nbrOfWorkers() > 1){
     .furrr_opts_pars <- c(.furrr_opts_pars, list(seed=TRUE, globals=.globals))
     if(.silent){
@@ -66,7 +66,7 @@ best_map <- function(
 
 best_map2 <- function(
   .x, .y, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE,
-  .show_progress=TRUE, .globals=TRUE
+  .show_progress=TRUE, .globals=TRUE, .pkg=NULL
 ){
 
   stopifnot((length(.x) == length(.y)) | any(c(length(.x), length(.y)) == 1))
@@ -94,7 +94,7 @@ best_map2 <- function(
     }
   }
 
-  .furrr_opts_pars <- list()
+  .furrr_opts_pars <- list(packages=.pkg)
   if(future::nbrOfWorkers() > 1){
     .furrr_opts_pars <- c(.furrr_opts_pars, list(seed=TRUE, globals=.globals))
     if(.silent){
