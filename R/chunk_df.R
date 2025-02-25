@@ -1,3 +1,14 @@
+#' Title
+#'
+#' @param .df ...
+#' @param .n_rows ...
+#' @param .n_chunks ...
+#'
+#' @returns ...
+#' @export
+#'
+#' @examples
+#' "example"
 chunk_df <- function(.df, .n_rows=NULL, .n_chunks=NULL){
 
   stopifnot(is.data.frame(.df))
@@ -20,6 +31,17 @@ chunk_df <- function(.df, .n_rows=NULL, .n_chunks=NULL){
 
 }
 
+#' Title
+#'
+#' @param .vec ...
+#' @param .n_elems ...
+#' @param .n_chunks ...
+#'
+#' @returns ...
+#' @export
+#'
+#' @examples
+#' "example"
 chunk_vector <- function(.vec, .n_elems=NULL, .n_chunks=NULL){
 
   stopifnot(rlang::is_vector(.vec))
@@ -40,3 +62,31 @@ chunk_vector <- function(.vec, .n_elems=NULL, .n_chunks=NULL){
   unname(split.default(.vec, .vec_split_id))
 
 }
+
+# ggplot2::cut_number() >> ggplot2:::breaks()
+# function (x, equal, nbins = NULL, binwidth = NULL)
+# {
+#   equal <- arg_match0(equal, c("numbers", "width"))
+#   if ((!is.null(nbins) && !is.null(binwidth)) || (is.null(nbins) &&
+#                                                   is.null(binwidth))) {
+#     cli::cli_abort("Specify exactly one of {.arg n} and {.arg width}.")
+#   }
+#   rng <- range(x, na.rm = TRUE, finite = TRUE)
+#   if (equal == "width") {
+#     if (!is.null(binwidth)) {
+#       fullseq(rng, binwidth)
+#     }
+#     else {
+#       seq(rng[1], rng[2], length.out = nbins + 1)
+#     }
+#   }
+#   else {
+#     if (!is.null(binwidth)) {
+#       probs <- seq(0, 1, by = binwidth)
+#     }
+#     else {
+#       probs <- seq(0, 1, length.out = nbins + 1)
+#     }
+#     stats::quantile(x, probs, na.rm = TRUE)
+#   }
+# }

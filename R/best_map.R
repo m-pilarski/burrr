@@ -1,3 +1,20 @@
+#' Title
+#'
+#' @param .x ...
+#' @param .f ...
+#' @param ... ...
+#' @param .workers ...
+#' @param .scheduling ...
+#' @param .silent ...
+#' @param .show_progress ...
+#' @param .globals ...
+#' @param .pkg ...
+#'
+#' @returns ...
+#' @export
+#'
+#' @examples
+#' "example"
 best_map <- function(
   .x, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE, .show_progress=TRUE,
   .globals=TRUE, .pkg=NULL
@@ -6,21 +23,26 @@ best_map <- function(
   .f <- purrr::as_mapper(.f)
   .dots <- list(...)
 
+  .linux_is <- identical(
+    purrr::pluck(purrr::possibly(Sys.info)(), "sysname"), "Linux"
+  )
+
   if(!is.null(.workers)){
     .strategy_backup <- future::plan()
+    on.exit(future::plan(.strategy_backup))
     if(.workers %% 1 != 0 | .workers < 0){
       stop(".workers needs to be a natural number")
     }else if(.workers %in% 0:1){
-      if(.workers == 0){
-        future::plan(future::transparent, gc=TRUE)
-      }else{
-        future::plan(future::sequential, gc=TRUE)
-      }
+      future::plan(future::sequential, gc=TRUE, split=.workers == 0)
     }else if(.workers >= 2){
       .workers <- min(.workers, future::availableCores())
       future::plan(future::sequential, .skip=FALSE, .cleanup=TRUE)
       gc()
-      future::plan(future::multisession, workers=.workers, gc=TRUE)
+      if(.linux_is){
+        future::plan(future::multicore, workers=.workers, gc=TRUE)
+      }else{
+        future::plan(future::multisession, workers=.workers, gc=TRUE)
+      }
     }else{
       stop("unable to set future strategy", call.=FALSE)
     }
@@ -37,26 +59,21 @@ best_map <- function(
   }
   .furrr_opts <- rlang::exec(furrr::furrr_options, !!!.furrr_opts_pars)
 
-  tryCatch({
-    progressr::with_progress(
-      expr={
-        .p <- progressr::progressor(steps=length(.x))
-        .r <- furrr::future_map(.x, function(..x_i){
-          ..r_i <- rlang::exec(.f, ..x_i, !!!.dots); .p(); return(..r_i)
-        }, .options=.furrr_opts); .p(amount=Inf)
-      },
-      handlers=progressr::handler_progress(
-        format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
-        width=60,
-        complete="="
-      ),
-      interval=1, enable=.show_progress
-    )
-  }, interrupt=function(...){
-    stop("Interrupted by the user")
-  }, finally={
-    if(!is.null(.workers)){future::plan(.strategy_backup)}
-  })
+  progressr::with_progress(
+    expr={
+      .p <- progressr::progressor(steps=length(.x))
+      .r <- furrr::future_map(.x, function(..x_i){
+        ..r_i <- rlang::exec(.f, ..x_i, !!!.dots); .p(); return(..r_i)
+      }, .options=.furrr_opts); .p(amount=Inf)
+    },
+    handlers=progressr::handler_progress(
+      format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
+      width=60,
+      complete="="
+    ),
+    interval=1,
+    enable=.show_progress
+  )
 
   return(.r)
 
@@ -64,6 +81,24 @@ best_map <- function(
 
 ################################################################################
 
+#' Title
+#'
+#' @param .x ...
+#' @param .y ...
+#' @param .f ...
+#' @param ... ...
+#' @param .workers ...
+#' @param .scheduling ...
+#' @param .silent ...
+#' @param .show_progress ...
+#' @param .globals ...
+#' @param .pkg ...
+#'
+#' @returns ...
+#' @export
+#'
+#' @examples
+#' "example"
 best_map2 <- function(
   .x, .y, .f, ..., .workers=NULL, .scheduling=1, .silent=FALSE,
   .show_progress=TRUE, .globals=TRUE, .pkg=NULL
@@ -74,21 +109,26 @@ best_map2 <- function(
   .f <- purrr::as_mapper(.f)
   .dots <- list(...)
 
+  .linux_is <- identical(
+    purrr::pluck(purrr::possibly(Sys.info)(), "sysname"), "Linux"
+  )
+
   if(!is.null(.workers)){
     .strategy_backup <- future::plan()
+    on.exit(future::plan(.strategy_backup))
     if(.workers %% 1 != 0 | .workers < 0){
       stop(".workers needs to be a natural number")
     }else if(.workers %in% 0:1){
-      if(.workers == 0){
-        future::plan(future::transparent, gc=TRUE)
-      }else{
-        future::plan(future::sequential, gc=TRUE)
-      }
+      future::plan(future::sequential, gc=TRUE, split=.workers == 0)
     }else if(.workers >= 2){
       .workers <- min(.workers, future::availableCores())
       future::plan(future::sequential, .skip=FALSE, .cleanup=TRUE)
       gc()
-      future::plan(future::multisession, workers=.workers, gc=TRUE)
+      if(.linux_is){
+        future::plan(future::multicore, workers=.workers, gc=TRUE)
+      }else{
+        future::plan(future::multisession, workers=.workers, gc=TRUE)
+      }
     }else{
       stop("unable to set future strategy", call.=FALSE)
     }
@@ -106,26 +146,21 @@ best_map2 <- function(
 
   .furrr_opts <- rlang::exec(furrr::furrr_options, !!!.furrr_opts_pars)
 
-  tryCatch({
-    progressr::with_progress(
-      expr={
-        .p <- progressr::progressor(steps=max(length(.x), length(.y)))
-        .r <- furrr::future_map2(.x, .y, function(..x_i, ..y_i){
-          ..r_i <- rlang::exec(.f, ..x_i, ..y_i, !!!.dots); .p(); return(..r_i)
-        }, .options=.furrr_opts); .p(amount=Inf)
-      },
-      handlers=progressr::handler_progress(
-        format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
-        width=60,
-        complete="="
-      ),
-      interval=1, enable=.show_progress
-    )
-  }, interrupt=function(...){
-    stop("Interrupted by the user")
-  }, finally={
-    if(!is.null(.workers)){future::plan(.strategy_backup)}
-  })
+  progressr::with_progress(
+    expr={
+      .p <- progressr::progressor(steps=max(length(.x), length(.y)))
+      .r <- furrr::future_map2(.x, .y, function(..x_i, ..y_i){
+        ..r_i <- rlang::exec(.f, ..x_i, ..y_i, !!!.dots); .p(); return(..r_i)
+      }, .options=.furrr_opts); .p(amount=Inf)
+    },
+    handlers=progressr::handler_progress(
+      format=":spin :current/:total [:bar] :percent in :elapsed ETA: :eta",
+      width=60,
+      complete="="
+    ),
+    interval=1,
+    enable=.show_progress
+  )
 
   return(.r)
 
